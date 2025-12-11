@@ -25,54 +25,63 @@ reports = [
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form['username'].strip()
+        password = request.form['password'].strip()
         if username in users and users[username]['password'] == password:
-            return redirect(url_for('dashboard', username=username))
+            # Add trailing slash for Render
+            return redirect(url_for('dashboard', username=username) + '/')
         else:
             flash("Invalid Credentials")
     return render_template("login.html")
 
-@app.route("/dashboard/<username>", methods=["GET", "POST"])
+
+# Dashboard route with trailing slash
+@app.route("/dashboard/<username>/", methods=["GET", "POST"])
 def dashboard(username):
+    if username not in users:
+        flash("Invalid user")
+        return redirect(url_for('login'))
+
     rm_name = users[username]['RM_Name']
     mapped_investors = df[df['RM_Name'] == rm_name]['Investor_Name'].tolist()
-    
+
     if request.method == "POST":
         investor = request.form['investor']
         report = request.form['report']
         from_date = request.form.get('from_date', '')
         to_date = request.form.get('to_date', '')
-        
+
         # Send Email
         sender = "saikumar.thota@pmsbazaar.com"
-        password = "fvzh fpje imdy buik"
+        sender_password = "fvzh fpje imdy buik"
         receiver = "saikumar.thota@pmsbazaar.com"
-        
+
         subject = f"Report Request by {rm_name}"
         body = f"""
-        RM Name: {rm_name}
-        Investor: {investor}
-        Report: {report}
-        From Date: {from_date}
-        To Date: {to_date}
-        """
-        
+RM Name: {rm_name}
+Investor: {investor}
+Report: {report}
+From Date: {from_date}
+To Date: {to_date}
+"""
+
         msg = MIMEText(body)
         msg['Subject'] = subject
         msg['From'] = sender
         msg['To'] = receiver
-        
+
         try:
             with smtplib.SMTP('smtp.gmail.com', 587) as server:
                 server.starttls()
-                server.login(sender, password)
+                server.login(sender, sender_password)
                 server.sendmail(sender, receiver, msg.as_string())
             flash("Request Sent Successfully!")
         except Exception as e:
             flash(f"Error sending email: {e}")
-    
+
     return render_template("dashboard.html", investors=mapped_investors, reports=reports, rm_name=rm_name)
 
+
 if __name__ == "__main__":
+    # Use 0.0.0.0 and port 5000 for Render
     app.run(host="0.0.0.0", port=5000)
