@@ -3,11 +3,12 @@ import pandas as pd
 import smtplib
 from email.mime.text import MIMEText
 import threading
+import traceback
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
 
-# Load RM & Investor mapping
+# ---------------- LOAD RM & INVESTOR MAPPING ---------------- #
 df = pd.read_excel("rm_investors.xlsx")
 
 # Create login dictionary
@@ -29,10 +30,10 @@ reports = [
     "Dividend Report"
 ]
 
-# ------------ ASYNC EMAIL SENDER ---------------- #
+# ---------------- ASYNC EMAIL SENDER ---------------- #
 def send_email_async(subject, body):
     sender = "thotavenkatahemanth@gmail.com"
-    sender_password = "unke icnv fglw qgnj"
+    sender_password = "unke icnv fglw qgnj"  # Replace with your App Password
     receiver = "thotavenkatahemanth@gmail.com"
 
     msg = MIMEText(body)
@@ -41,14 +42,16 @@ def send_email_async(subject, body):
     msg["To"] = receiver
 
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as server:
+            server.ehlo()
             server.starttls()
             server.login(sender, sender_password)
-            server.sendmail(sender, receiver, msg.as_string())
-        print("Email sent in background")
+            server.send_message(msg)
+        print("Email sent successfully")
     except Exception as e:
-        print("Email sending failed:", e)
-
+        print("Failed to send email:")
+        print(e)
+        traceback.print_exc()
 
 # ---------------- LOGIN ROUTE ---------------- #
 @app.route("/", methods=["GET", "POST"])
@@ -64,9 +67,7 @@ def login():
 
     return render_template("login.html")
 
-
 # ---------------- DASHBOARD ROUTE ---------------- #
-# Accept both URLs: /dashboard/user and /dashboard/user/
 @app.route("/dashboard/<username>", methods=["GET", "POST"])
 @app.route("/dashboard/<username>/", methods=["GET", "POST"])
 def dashboard(username):
@@ -108,7 +109,6 @@ To Date: {to_date}
         rm_name=rm_name
     )
 
-
-# ---------------- RUN APP (Render compatible) ---------------- #
+# ---------------- RUN APP ---------------- #
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, debug=True)
