@@ -31,8 +31,8 @@ reports = [
 
 # ------------ ASYNC EMAIL SENDER ---------------- #
 def send_email_async(subject, body):
-    sender = "saikumar.thota@pmsbazaar.com"
-    sender_password = "xiib gchl voju erhf"
+    sender = "thotavenkatahemanth@gmail.com"
+    sender_password = "unke icnv fglw qgnj"
     receiver = "saikumar.thota@pmsbazaar.com"
 
     msg = MIMEText(body)
