@@ -5,6 +5,7 @@
 </head>
 <body>
     <h2>Welcome {{ rm_name }}</h2>
+
     <form method="POST">
         <label>Investor:</label>
         <select name="investor" required>
@@ -12,22 +13,23 @@
                 <option value="{{ inv }}">{{ inv }}</option>
             {% endfor %}
         </select><br><br>
-        
+
         <label>Report:</label>
         <select name="report" required>
             {% for rep in reports %}
                 <option value="{{ rep }}">{{ rep }}</option>
             {% endfor %}
         </select><br><br>
-        
+
         <label>From Date:</label>
         <input type="date" name="from_date"><br><br>
-        
+
         <label>To Date:</label>
         <input type="date" name="to_date"><br><br>
-        
+
         <button type="submit">Submit Request</button>
     </form>
+
     {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul>

@@ -41,7 +41,6 @@ def send_email_async(subject, body):
     msg["To"] = receiver
 
     try:
-        # 10-second timeout prevents Render request blocking
         with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
             server.starttls()
             server.login(sender, sender_password)
@@ -67,6 +66,8 @@ def login():
 
 
 # ---------------- DASHBOARD ROUTE ---------------- #
+# Accept both URLs: /dashboard/user and /dashboard/user/
+@app.route("/dashboard/<username>", methods=["GET", "POST"])
 @app.route("/dashboard/<username>/", methods=["GET", "POST"])
 def dashboard(username):
     if username not in users:
@@ -98,7 +99,7 @@ To Date: {to_date}
             daemon=True
         ).start()
 
-        flash("Request submitted! Email is being sent in the background.")
+        flash("Request submitted! Email is being processed in the background.")
 
     return render_template(
         "dashboard.html",
