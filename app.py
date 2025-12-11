@@ -11,7 +11,6 @@ app.secret_key = "your_secret_key"
 # ---------------- LOAD RM & INVESTOR MAPPING ---------------- #
 df = pd.read_excel("rm_investors.xlsx")
 
-# Create login dictionary
 users = {
     row['Username']: {
         'password': row['Password'],
@@ -20,7 +19,6 @@ users = {
     for idx, row in df.iterrows()
 }
 
-# Available reports
 reports = [
     "Portfolio Factsheet",
     "Portfolio Apprisal",
@@ -30,10 +28,10 @@ reports = [
     "Dividend Report"
 ]
 
-# ---------------- ASYNC EMAIL SENDER ---------------- #
-def send_email_async(subject, body):
+# ---------------- EMAIL SENDER (SSL + Logging) ---------------- #
+def send_email(subject, body):
     sender = "thotavenkatahemanth@gmail.com"
-    sender_password = "unke icnv fglw qgnj"  # Replace with your App Password
+    app_password = "unke icnv fglw qgnj"  # Replace with your App Password
     receiver = "thotavenkatahemanth@gmail.com"
 
     msg = MIMEText(body)
@@ -42,16 +40,19 @@ def send_email_async(subject, body):
     msg["To"] = receiver
 
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(sender, sender_password)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as server:
+            server.login(sender, app_password)
             server.send_message(msg)
         print("Email sent successfully")
     except Exception as e:
         print("Failed to send email:")
         print(e)
         traceback.print_exc()
+
+# Wrapper for threading
+def send_email_async(subject, body):
+    thread = threading.Thread(target=send_email, args=(subject, body), daemon=True)
+    thread.start()
 
 # ---------------- LOGIN ROUTE ---------------- #
 @app.route("/", methods=["GET", "POST"])
@@ -94,12 +95,7 @@ To Date: {to_date}
 """
 
         # Send email in background thread
-        threading.Thread(
-            target=send_email_async,
-            args=(subject, body),
-            daemon=True
-        ).start()
-
+        send_email_async(subject, body)
         flash("Request submitted! Email is being processed in the background.")
 
     return render_template(
