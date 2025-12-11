@@ -33,7 +33,7 @@ reports = [
 def send_email_async(subject, body):
     sender = "thotavenkatahemanth@gmail.com"
     sender_password = "unke icnv fglw qgnj"
-    receiver = "saikumar.thota@pmsbazaar.com"
+    receiver = "thotavenkatahemanth@gmail.com"
 
     msg = MIMEText(body)
     msg["Subject"] = subject
